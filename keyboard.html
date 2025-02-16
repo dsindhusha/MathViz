@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathViz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #b3e5fc, #ffffff);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background 0.5s ease-in-out;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            width: 100%;
+            top: 0;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #0277bd;
+        }
+
+        header nav a {
+            color: #0277bd;
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        header nav a:hover {
+            color: #01579b;
+            transform: scale(1.1);
+        }
+
+        .keyboard-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 420px;
+            height: 570px; /* Reduced height */
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out;
+            position: relative;
+        }
+
+        .display {
+            display: flex;
+            align-items: center;
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        #result {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 28px; /* Increased font size for the input box */
+            background: transparent;
+            text-align: left;
+            padding: 10px;
+        }
+
+        .copy-btn {
+            background: #0277bd;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #01579b;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        button {
+            font-size: 22px; /* Increased font size for buttons */
+            padding: 18px; /* Reduced padding to adjust height */
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #a3c4f3;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #7ca6d6;
+        }
+
+        .clear-btn {
+            grid-column: span 4;
+            background: #0277bd;
+            color: white;
+        }
+
+        .clear-btn:hover {
+            background: #01579b;
+        }
+
+        .toggle-btn {
+            grid-column: span 4;
+            background: #0277bd;
+            color: white;
+        }
+
+        .toggle-btn:hover {
+            background: #01579b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* For mobile responsiveness */
+        @media (max-width: 600px) {
+            .keyboard-container {
+                width: 100%;
+                padding: 15px;
+            }
+            .keyboard {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>MathViz</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="keyboard.html">Keyboard</a>
+            <a href="algebra.html">Algebra</a>
+            <a href="trignometry.html">Trigonometry</a>
+            <a href="geometry.html">Geometry</a>
+            <a href="statstics.html">Statistics</a>
+            <a href="graphs.html">Graphs</a>
+        </nav>
+    </header>
+
+    <div class="keyboard-container">
+        <div class="display">
+            <input type="text" id="result" placeholder="Type here..." readonly>
+            <button class="copy-btn" onclick="copyToClipboard()">📋</button>
+        </div>
+
+        <!-- Basic Numbers and Operations -->
+        <div class="keyboard" id="basicKeys">
+            <button onclick="insertSymbol('7')">7</button>
+            <button onclick="insertSymbol('8')">8</button>
+            <button onclick="insertSymbol('9')">9</button>
+            <button onclick="insertSymbol('+')">+</button>
+            <button onclick="insertSymbol('4')">4</button>
+            <button onclick="insertSymbol('5')">5</button>
+            <button onclick="insertSymbol('6')">6</button>
+            <button onclick="insertSymbol('-')">−</button>
+            <button onclick="insertSymbol('1')">1</button>
+            <button onclick="insertSymbol('2')">2</button>
+            <button onclick="insertSymbol('3')">3</button>
+            <button onclick="insertSymbol('×')">×</button>
+            <button onclick="insertSymbol('0')">0</button>
+            <button onclick="insertSymbol('.')">.</button>
+            <button onclick="calculateResult('=')">=</button>
+            <button onclick="insertSymbol('÷')">÷</button>
+            <button class="clear-btn" onclick="clearInput()">Clear</button>
+            <button class="toggle-btn" onclick="toggleAdvanced()">More Symbols ⬇️</button>
+        </div>
+
+        <!-- Advanced Math Symbols (Initially Hidden) -->
+        <div class="keyboard hidden" id="advancedKeys">
+            <button onclick="insertSymbol('≠')">≠</button>
+            <button onclick="insertSymbol('≈')">≈</button>
+            <button onclick="insertSymbol('√')">√</button>
+            <button onclick="insertSymbol('π')">π</button>
+            <button onclick="insertSymbol('∞')">∞</button>
+            <button onclick="insertSymbol('∑')">∑</button>
+            <button onclick="insertSymbol('∫')">∫</button>
+            <button onclick="insertSymbol('Δ')">Δ</button>
+            <button onclick="insertSymbol('∂')">∂</button>
+            <button onclick="insertSymbol('θ')">θ</button>
+            <button onclick="insertSymbol('α')">α</button>
+            <button onclick="insertSymbol('β')">β</button>
+            <button onclick="insertSymbol('sin')">sin</button>
+            <button onclick="insertSymbol('cos')">cos</button>
+            <button onclick="insertSymbol('tan')">tan</button>
+            <button onclick="insertSymbol('e')">e</button>
+            <button onclick="insertSymbol('^')">^</button>
+            <button onclick="insertSymbol('log')">log</button>
+            <button onclick="insertSymbol('ln')">ln</button>
+            <button onclick="insertSymbol('(')">(</button>
+            <button onclick="insertSymbol(')')">)</button>
+            <button class="toggle-btn" onclick="toggleAdvanced()">⬆️ Back to Basics</button>
+        </div>
+    </div>
+
+    <script>
+        const resultInput = document.getElementById("result");
+
+        function calculateResult() {
+            try {
+                resultInput.value = eval(resultInput.value); // Simple evaluation of arithmetic
+            } catch (error) {
+                alert("Invalid calculation");
+            }
+        }
+
+        function insertSymbol(symbol) {
+            document.getElementById("result").value += symbol;
+        }
+
+        function clearInput() {
+            document.getElementById("result").value = "";
+        }
+
+        function copyToClipboard() {
+            let inputField = document.getElementById("result");
+            inputField.select();
+            document.execCommand("copy");
+            alert("Copied to clipboard!");
+        }
+
+        function toggleAdvanced() {
+            let basicKeys = document.getElementById("basicKeys");
+            let advancedKeys = document.getElementById("advancedKeys");
+
+            if (advancedKeys.classList.contains("hidden")) {
+                basicKeys.classList.add("hidden");
+                advancedKeys.classList.remove("hidden");
+            } else {
+                advancedKeys.classList.add("hidden");
+                basicKeys.classList.remove("hidden");
+            }
+        }
+    </script>
+
+</body>
+</html>

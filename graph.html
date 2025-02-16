@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathViz Graphing Tool</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.24.1/plotly.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #b3e5fc, #ffffff);
+      color: #333;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+      position: absolute;
+      width: 100%;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: #0277bd;
+      margin-right: auto;
+    }
+
+    header nav {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    header nav a {
+      color: #0277bd;
+      margin: 0 10px;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+
+    header nav a:hover {
+      color: #01579b;
+    }
+
+    h2 {
+      color: #0277bd;
+      font-size: 2rem;
+      margin-top: 120px;
+      font-weight: bold;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      width: 90%;
+      max-width: 600px;
+      margin-top: 120px;
+    }
+
+    input,
+    select {
+      padding: 12px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #a3c4f3;
+    }
+
+    input,
+    select:hover {
+      background: #7ca6d6;
+    }
+
+    button {
+      padding: 12px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #a3c4f3;
+    }
+
+    button:hover {
+      background: #7ca6d6;
+    }
+
+    #graph {
+      width: 100%;
+      height: 400px;
+    }
+
+    .slider-container {
+      margin-top: 10px;
+    }
+
+    .slider-label {
+      font-size: 14px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>MathViz</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="keyboard.html">Keyboard</a>
+      <a href="algebra.html">Algebra</a>
+      <a href="trignometry.html">Trigonometry</a>
+      <a href="geometry.html">Geometry</a>
+      <a href="statastics.html">Statistics</a>
+      <a href="graph.html">Graphs</a>
+    </nav>
+  </header>
+
+  <h2>MathViz Graphing Tool</h2>
+
+  <div class="container">
+    <select id="graphType">
+      <option value="2D">2D Graphing</option>
+      <option value="3D">3D Graphing</option>
+    </select>
+    <input type="text" id="equationInput" placeholder="Enter function (e.g., sin(x))">
+    <button onclick="plotGraph()">Plot</button>
+
+    <div class="slider-container">
+      <label class="slider-label">Adjust Parameter (a):</label>
+      <input type="range" id="paramSlider" min="1" max="10" step="0.1" value="1" oninput="updateGraph()">
+    </div>
+
+    <div id="graph"></div>
+
+    <button onclick="downloadImage()">Download as Image</button>
+    <button onclick="downloadPDF()">Download as PDF</button>
+  </div>
+
+  <script>
+    let currentGraphType = "2D";
+
+    document.getElementById("graphType").addEventListener("change", function () {
+      currentGraphType = this.value;
+      plotGraph();
+    });
+
+    function plotGraph() {
+      let equation = document.getElementById("equationInput").value;
+      let graphDiv = document.getElementById("graph");
+
+      if (!equation) {
+        return; // Prevent execution if no equation is entered
+      }
+
+      let paramA = parseFloat(document.getElementById("paramSlider").value);
+
+      if (currentGraphType === "2D") {
+        let xValues = math.range(-10, 10, 0.1).toArray();
+        let yValues = xValues.map(x => {
+          try {
+            return math.evaluate(equation, { x, a: paramA });
+          } catch (error) {
+            return NaN;
+          }
+        });
+
+        let trace = {
+          x: xValues,
+          y: yValues,
+          mode: 'lines',
+          name: equation
+        };
+
+        let layout = {
+          title: `2D Graph: y = ${equation}`,
+          xaxis: { title: "X-axis" },
+          yaxis: { title: "Y-axis" }
+        };
+
+        Plotly.newPlot(graphDiv, [trace], layout);
+      } else if (currentGraphType === "3D") {
+        let xRange = math.range(-5, 5, 0.5).toArray();
+        let yRange = math.range(-5, 5, 0.5).toArray();
+        let zValues = [];
+
+        for (let x of xRange) {
+          let zRow = [];
+          for (let y of yRange) {
+            try {
+              zRow.push(math.evaluate(equation, { x, y, a: paramA }));
+            } catch (error) {
+              zRow.push(NaN);
+            }
+          }
+          zValues.push(zRow);
+        }
+
+        let trace3D = {
+          x: xRange,
+          y: yRange,
+          z: zValues,
+          type: 'surface'
+        };
+
+        let layout3D = {
+          title: `3D Graph: z = ${equation}`,
+          scene: { xaxis: { title: "X-axis" }, yaxis: { title: "Y-axis" }, zaxis: { title: "Z-axis" } }
+        };
+
+        Plotly.newPlot(graphDiv, [trace3D], layout3D);
+      }
+    }
+
+    function updateGraph() {
+      plotGraph();
+    }
+
+    // Function to download image
+    function downloadImage() {
+      html2canvas(document.getElementById("graph")).then(canvas => {
+        let link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = "graph_image.png";
+        link.click();
+      });
+    }
+
+    // Function to download PDF
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      html2canvas(document.getElementById("graph")).then(canvas => {
+        let imgData = canvas.toDataURL("image/png");
+        doc.addImage(imgData, "PNG", 10, 10, 180, 0);
+        doc.save("graph_operations.pdf");
+      });
+    }
+
+    plotGraph(); 
+  </script>
+
+</body>
+
+</html>
